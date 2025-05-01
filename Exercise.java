@@ -254,11 +254,44 @@ class MyHashMap<K, V> implements MyMap<K, V> {
  
   /** Return the first value that matches the specified key */
   public V get(K key) {
+    int bucketIndex = hash(key.hashCode());
     
+    while(table[bucketIndex] != null) {
+        if (table[bucketIndex].key != null && table[bucketIndex].key.equals(key)) {
+            return table[bucketIndex].value;
+        } else {
+            bucketIndex = (bucketIndex + 1) % capacity;
+        }
+    }
+
+    return null;
   }
 
   /** Add an entry (key, value) into the map */
   public V put(K key, V value) {
-    
+    // Check load factor
+    if (size >= capacity * loadFactorThreshold) {
+        if (capacity == MAXIMUM_CAPACITY) {
+            throw new IllegalStateException("Exceeding maximum capacity");
+        }
+        rehash();
+    }
+
+    int bucketIndex = hash(key.hashCode());
+
+    while (table[bucketIndex] != null) {
+        if (table[bucketIndex].key != null && table[bucketIndex].key.equals(key)) {
+            V oldValue = table[bucketIndex].value;
+            table[bucketIndex].value = value;
+            return oldValue;
+        }
+        bucketIndex = (bucketIndex + 1) % capacity;
+    }
+
+    table[bucketIndex] = new MyMap.Entry<>(key, value);
+
+    size++;
+
+    return value;
   } 
 }
